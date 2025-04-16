@@ -12,7 +12,7 @@ export default function Home() {
         <Button variant="elevated">I am Button</Button>
         <Input placeholder="Input" className="w-64" />
         <Progress value={50} className="w-64" />
-        <Textarea value="Hello" className="w-64" />
+
         <Checkbox value="One" />
       </div>
     </div>
