@@ -1,10 +1,9 @@
-import { Category } from "@/payload-types";
-import { PaginatedDocs } from "payload";
 import { SearchInput } from "./search-input";
 import { Categories } from "./categories";
+import { CustomCategory } from "../types";
 
 interface Props {
-  data: any;
+  data: CustomCategory[];
 }
 
 export const SearchFilter = ({ data }: Props) => {
