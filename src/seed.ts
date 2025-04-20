@@ -137,150 +137,150 @@ const categories = [
   },
 ];
 
-// const seed = async () => {
-//   const payload = await getPayload({ config });
-
-//   for (const category of categories) {
-//     const parentCategory = await payload.create({
-//       collection: "categories",
-//       data: {
-//         name: category.name,
-//         slug: category.slug,
-//         color: category.color,
-//         parent: null,
-//       },
-//     });
-
-//     for (const subcategory of category.subcategories || []) {
-//       await payload.create({
-//         collection: "categories",
-//         data: {
-//           name: subcategory.name,
-//           slug: subcategory.slug,
-//           parent: parentCategory.id,
-//         },
-//       });
-//     }
-//   }
-// };
-
-// await seed();
-
-// process.exit(0);
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const seed = async () => {
   const payload = await getPayload({ config });
 
-  // Process each category one by one
   for (const category of categories) {
-    console.log(`Processing category: ${category.name}`);
+    const parentCategory = await payload.create({
+      collection: "categories",
+      data: {
+        name: category.name,
+        slug: category.slug,
+        color: category.color,
+        parent: null,
+      },
+    });
 
-    // Try to create parent category with retries
-    let parentCategory = null;
-    let retries = 5;
-
-    while (retries > 0 && !parentCategory) {
-      try {
-        parentCategory = await payload.create({
-          collection: "categories",
-          data: {
-            name: category.name,
-            slug: category.slug,
-            color: category.color || undefined, // Only include if it exists
-            parent: null,
-          },
-        });
-
-        console.log(`✓ Created category: ${category.name}`);
-      } catch (error) {
-        console.error(`Error creating category ${category.name}:`);
-        retries--;
-
-        if (retries > 0) {
-          const waitTime = 3000 * (6 - retries); // Increase wait time with each retry
-          console.log(
-            `Retrying in ${waitTime / 1000} seconds... (${retries} attempts left)`
-          );
-          await delay(waitTime);
-        } else {
-          console.error(
-            `Failed to create category ${category.name} after multiple attempts. Skipping its subcategories.`
-          );
-          // Continue with next category
-          continue;
-        }
-      }
+    for (const subcategory of category.subcategories || []) {
+      await payload.create({
+        collection: "categories",
+        data: {
+          name: subcategory.name,
+          slug: subcategory.slug,
+          parent: parentCategory.id,
+        },
+      });
     }
-
-    // If parent category was created successfully and has subcategories
-    if (
-      parentCategory &&
-      category.subcategories &&
-      category.subcategories.length > 0
-    ) {
-      console.log(
-        `Processing ${category.subcategories.length} subcategories for ${category.name}...`
-      );
-
-      // Process subcategories with significant delay between each
-      for (const subcategory of category.subcategories) {
-        let subcategoryRetries = 5;
-        let subcategoryCreated = false;
-
-        while (subcategoryRetries > 0 && !subcategoryCreated) {
-          try {
-            await payload.create({
-              collection: "categories",
-              data: {
-                name: subcategory.name,
-                slug: subcategory.slug,
-                parent: parentCategory.id,
-              },
-            });
-
-            console.log(`  ✓ Created subcategory: ${subcategory.name}`);
-            subcategoryCreated = true;
-
-            // Wait between operations even on success
-            await delay(1000);
-          } catch (error) {
-            console.error(`  Error creating subcategory ${subcategory.name}:`);
-            subcategoryRetries--;
-
-            if (subcategoryRetries > 0) {
-              const waitTime = 3000 * (6 - subcategoryRetries); // Increase wait time with each retry
-              console.log(
-                `  Retrying in ${waitTime / 1000} seconds... (${subcategoryRetries} attempts left)`
-              );
-              await delay(waitTime);
-            } else {
-              console.error(
-                `  Failed to create subcategory ${subcategory.name} after multiple attempts. Continuing with next.`
-              );
-            }
-          }
-        }
-      }
-    }
-
-    // Additional delay between processing different categories
-    console.log(`Waiting before processing next category...`);
-    await delay(5000);
   }
 };
 
-const runSeed = async () => {
-  try {
-    console.log("Starting database seed...");
-    await seed();
-    console.log("Database seeded successfully!");
-    process.exit(0);
-  } catch (error) {
-    console.error("Fatal error during seeding:", error);
-    process.exit(1);
-  }
-};
+await seed();
 
-runSeed();
+process.exit(0);
+
+// const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// const seed = async () => {
+//   const payload = await getPayload({ config });
+
+//   // Process each category one by one
+//   for (const category of categories) {
+//     console.log(`Processing category: ${category.name}`);
+
+//     // Try to create parent category with retries
+//     let parentCategory = null;
+//     let retries = 5;
+
+//     while (retries > 0 && !parentCategory) {
+//       try {
+//         parentCategory = await payload.create({
+//           collection: "categories",
+//           data: {
+//             name: category.name,
+//             slug: category.slug,
+//             color: category.color || undefined, // Only include if it exists
+//             parent: null,
+//           },
+//         });
+
+//         console.log(`✓ Created category: ${category.name}`);
+//       } catch (error) {
+//         console.error(`Error creating category ${category.name}:`);
+//         retries--;
+
+//         if (retries > 0) {
+//           const waitTime = 3000 * (6 - retries); // Increase wait time with each retry
+//           console.log(
+//             `Retrying in ${waitTime / 1000} seconds... (${retries} attempts left)`
+//           );
+//           await delay(waitTime);
+//         } else {
+//           console.error(
+//             `Failed to create category ${category.name} after multiple attempts. Skipping its subcategories.`
+//           );
+//           // Continue with next category
+//           continue;
+//         }
+//       }
+//     }
+
+//     // If parent category was created successfully and has subcategories
+//     if (
+//       parentCategory &&
+//       category.subcategories &&
+//       category.subcategories.length > 0
+//     ) {
+//       console.log(
+//         `Processing ${category.subcategories.length} subcategories for ${category.name}...`
+//       );
+
+//       // Process subcategories with significant delay between each
+//       for (const subcategory of category.subcategories) {
+//         let subcategoryRetries = 5;
+//         let subcategoryCreated = false;
+
+//         while (subcategoryRetries > 0 && !subcategoryCreated) {
+//           try {
+//             await payload.create({
+//               collection: "categories",
+//               data: {
+//                 name: subcategory.name,
+//                 slug: subcategory.slug,
+//                 parent: parentCategory.id,
+//               },
+//             });
+
+//             console.log(`  ✓ Created subcategory: ${subcategory.name}`);
+//             subcategoryCreated = true;
+
+//             // Wait between operations even on success
+//             await delay(1000);
+//           } catch (error) {
+//             console.error(`  Error creating subcategory ${subcategory.name}:`);
+//             subcategoryRetries--;
+
+//             if (subcategoryRetries > 0) {
+//               const waitTime = 3000 * (6 - subcategoryRetries); // Increase wait time with each retry
+//               console.log(
+//                 `  Retrying in ${waitTime / 1000} seconds... (${subcategoryRetries} attempts left)`
+//               );
+//               await delay(waitTime);
+//             } else {
+//               console.error(
+//                 `  Failed to create subcategory ${subcategory.name} after multiple attempts. Continuing with next.`
+//               );
+//             }
+//           }
+//         }
+//       }
+//     }
+
+//     // Additional delay between processing different categories
+//     console.log(`Waiting before processing next category...`);
+//     await delay(5000);
+//   }
+// };
+
+// const runSeed = async () => {
+//   try {
+//     console.log("Starting database seed...");
+//     await seed();
+//     console.log("Database seeded successfully!");
+//     process.exit(0);
+//   } catch (error) {
+//     console.error("Fatal error during seeding:", error);
+//     process.exit(1);
+//   }
+// };
+
+// runSeed();
