@@ -33,8 +33,6 @@ const HomeLayout = async ({ children }: Props) => {
     })),
   }));
 
-  console.log(formattedData);
-
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
